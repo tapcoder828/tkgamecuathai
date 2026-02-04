@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ Tay Tài Khoản Mật Khẩu</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Dark Blue-Gray Background */
+            color: #e2e8f0;
+        }
+        .mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .data-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            transition: transform 0.2s;
+        }
+        .data-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        /* Custom styling for the prominent security warning */
+        .security-warning {
+            background-color: #450a0a;
+            border-left: 6px solid #ef4444;
+            color: #fca5a5;
+            animation: pulse-border 2s infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: #ef4444; }
+            50% { border-color: #f87171; }
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-400 mb-3 tracking-wider">
+                Quản Lý Tài Khoản Cá Nhân
+            </h1>
+            <p class="text-gray-400 text-lg">
+                Sổ tay game và thông tin đăng nhập.
+            </p>
+        </header>
+
+        <!-- SECURITY WARNING - ALWAYS VISIBLE -->
+        <div class="security-warning p-4 rounded-lg mb-8 shadow-xl">
+            <h3 class="font-bold text-red-300 text-xl mb-2">⚠ CẢNH BÁO BẢO MẬT NGHIÊM TRỌNG ⚠</h3>
+            <p class="text-sm">
+                Mã PIN và tất cả Tài Khoản/Mật Khẩu đều được **LƯU TRONG MÃ NGUỒN** (Source Code) của trang web này. 
+                <span class="font-bold">Bất kỳ ai xem mã nguồn đều có thể thấy toàn bộ dữ liệu.</span> 
+                Cổng PIN này chỉ là bước lọc giao diện, **không phải** cơ chế bảo mật.
+            </p>
+        </div>
+
+        <!-- PIN GATE AREA -->
+        <div id="pin-gate" class="flex flex-col items-center p-8 bg-gray-800 rounded-xl shadow-2xl">
+            <h2 class="text-2xl font-semibold mb-4 text-white">Nhập Mã PIN Để Xem Dữ Liệu</h2>
+            <div id="pin-message" class="mb-4 text-red-400 font-medium hidden"></div>
+            <input type="password" id="pin-input" placeholder="Nhập Mã PIN..."
+                   class="w-full sm:w-80 p-3 mb-4 text-center text-lg bg-gray-700 border border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-white mono"
+                   maxlength="15">
+            <button id="pin-submit" onclick="checkPin()" 
+                    class="w-full sm:w-80 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-200 ease-in-out font-bold text-white shadow-md">
+                Xác Nhận
+            </button>
+
+        </div>
+
+        <!-- ACCOUNT LIST AREA -->
+        <div id="account-list" class="hidden">
+            <h2 class="text-2xl font-semibold mb-6 text-white border-b border-gray-700 pb-2">Thông Tin Tài Khoản Đã Mở Khóa</h2>
+            <div id="data-container" class="space-y-4">
+                <!-- Data will be dynamically inserted here -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const CORRECT_PIN = "ThaiVu2012";
+        const SESSION_KEY = "is_authenticated";
+
+        // Mảng chứa DỮ LIỆU NHẠY CẢM - TẤT CẢ ĐỀU HIỂN THỊ TRONG MÃ NGUỒN
+        const SENSITIVE_DATA = [
+            { game: "TK siêu bá đầy game hay", user: "jseyk61637", pass: "bxdms13816", platform: "Steam/BXDMS" },
+            { game: "Cult of the Lamb (TK2)", user: "hq4wo2ht2ey7", pass: "1https://www.vpesports.com/sharedsteam", platform: "Token/Link" },
+            { game: "Multi-Game (Steam)", user: "wbtq1089352", pass: "steamok778899", platform: "Steam" },
+            { game: "Black Myth Wukong", user: "mario_wukong", pass: "QCP7PFHMW4VV", platform: "WUKONG" },
+            { game: "Pokopow Website", user: "pokopow_com", pass: "www.pokopow.com", platform: "Website" },
+            { game: "Totally Accurate Battle Sim", user: "zcshl25114", pass: "Clear2006", platform: "Epic" },
+            { game: "General/Email", user: "hoangmac502@gmail.com", pass: "Gocloud999", platform: "Email/General" },
+            { game: "Forza 4", user: "bejwc", pass: "aA102020", platform: "Game" },
+            { game: "Multi-Account (Email 1)", user: "bigtex85@live.com", pass: "London85", platform: "Email/General" },
+            { game: "Multi-Account (Email 2)", user: "rose_vrc@hotmail.com", pass: "N/A", platform: "Email/General" },
+            { game: "General Key/Pass", user: "KickeyGame125ar", pass: "NCHDAC93FC", platform: "Key/Pass" },
+            { game: "General Account", user: "Zalyuner", pass: "Jhvghdha4", platform: "Account" },
+            { game: "Ghostwire Tokyo", user: "eeccff3694", pass: "T5cAwjsplay", platform: "Game" },
+            { game: "Black Myth Wukong (TK2)", user: "8782146147", pass: "N/A", platform: "Game" },
+        ];
+
+        function checkPin() {
+            const pinInput = document.getElementById('pin-input').value;
+            const messageElement = document.getElementById('pin-message');
+
+            if (pinInput === CORRECT_PIN) {
+                // Pin is correct
+                sessionStorage.setItem(SESSION_KEY, 'true');
+                messageElement.classList.add('hidden');
+                loadAccountList();
+            } else {
+                // Pin is incorrect
+                messageElement.textContent = "Mã PIN không đúng. Vui lòng thử lại.";
+                messageElement.classList.remove('hidden');
+                document.getElementById('pin-input').value = '';
+                document.getElementById('pin-input').focus();
+            }
+        }
+
+        function loadAccountList() {
+            document.getElementById('pin-gate').classList.add('hidden');
+            const accountListElement = document.getElementById('account-list');
+            const dataContainer = document.getElementById('data-container');
+            accountListElement.classList.remove('hidden');
+
+            dataContainer.innerHTML = SENSITIVE_DATA.map(item => `
+                <div class="data-card p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <div class="w-full sm:w-1/3 mb-3 sm:mb-0">
+                        <span class="block text-xs font-semibold uppercase text-gray-400">Trò chơi / Ghi chú</span>
+                        <span class="text-lg font-bold text-indigo-300">${item.game}</span>
+                        <span class="block text-sm text-gray-500 mt-1">(${item.platform})</span>
+                    </div>
+
+                    <div class="w-full sm:w-1/3 mb-3 sm:mb-0">
+                        <span class="block text-xs font-semibold uppercase text-gray-400">Tài khoản (TK/User)</span>
+                        <code class="text-base mono text-green-300 break-all">${item.user}</code>
+                    </div>
+
+                    <div class="w-full sm:w-1/3">
+                        <span class="block text-xs font-semibold uppercase text-gray-400">Mật khẩu (MK/Pass)</span>
+                        <code class="text-base mono text-red-300 break-all">${item.pass}</code>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Check authentication state on page load
+        window.onload = function() {
+            if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+                loadAccountList();
+            }
+            // Add Enter key listener to the input
+            document.getElementById('pin-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    checkPin();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
+
